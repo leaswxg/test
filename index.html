@@ -1,1 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A.I Scanner</title>
+    <style>
+        /* ── RESET & BASE ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0e17;
+            color: #e0e7f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .app {
+            max-width: 600px;
+            width: 100%;
+            background: #131a26;
+            border-radius: 28px;
+            padding: 24px 22px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            border: 1px solid #2a3548;
+            transition: all 0.2s;
+        }
+        .hidden {
+            display: none !important;
+        }
 
+        /* ── TYPOGRAPHY ── */
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .title span {
+            background: linear-gradient(135deg, #4cf0b0, #2d9cdb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .sub {
+            font-size: 14px;
+            color: #8a9bb5;
+            margin-bottom: 24px;
+            letter-spacing: 0.3px;
+        }
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #a0b3cc;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .status-text {
+            font-size: 14px;
+            color: #bcc9e0;
+            background: #1e2838;
+            padding: 8px 14px;
+            border-radius: 12px;
+            border-left: 3px solid #4cf0b0;
+            margin: 10px 0 6px;
+        }
+
+        /* ── INPUTS & BUTTONS ── */
+        input,
+        textarea {
+            width: 100%;
+            background: #1a2332;
+            border: 1px solid #2e3b4f;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 16px;
+            color: #eef4fc;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        input:focus,
+        textarea:focus {
+            border-color: #4cf0b0;
+            box-shadow: 0 0 0 3px rgba(76, 240, 176, 0.15);
+        }
+        input::placeholder,
+        textarea::placeholder {
+            color: #5e718d;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 44px;
+            line-height: 1.4;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #2d9cdb;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            width: 100%;
+            font-family: inherit;
+            letter-spacing: 0.3px;
+        }
+        .btn:hover {
+            background: #3aafe8;
+            box-shadow: 0 4px 20px rgba(45, 156, 219, 0.35);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn-secondary {
+            background: #2a364b;
+        }
+        .btn-secondary:hover {
+            background: #36455e;
+            box-shadow: 0 4px 20px rgba(42, 54, 75, 0.4);
+        }
+        .btn-success {
+            background: #2ecc71;
+        }
+        .btn-success:hover {
+            background: #3ddb84;
+            box-shadow: 0 4px 20px rgba(46, 204, 113, 0.35);
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: #f05a4a;
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.35);
+        }
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 14px;
+            width: auto;
+            border-radius: 10px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn-group .btn {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        /* ── MENU ── */
+        .menu-box {
+            text-align: center;
+            padding: 18px 0 6px;
+        }
+        .menu-box .sub {
+            margin-bottom: 18px;
+        }
+        .menu-box .code-input {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        .menu-box .code-input input {
+            text-align: center;
+            font-size: 22px;
+            letter-spacing: 4px;
+            font-weight: 600;
+        }
+
+        /* ── CAMERA ── */
+        .camera-wrap {
+            position: relative;
+            background: #0b1019;
+            border-radius: 18px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            border: 1px solid #2a3548;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .camera-wrap video,
+        .camera-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #0b1019;
+        }
+        .camera-wrap .cam-placeholder {
+            color: #4a5a74;
+            font-size: 15px;
+            text-align: center;
+            padding: 20px;
+        }
+        .camera-wrap .cam-placeholder .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .camera-controls .btn {
+            flex: 1;
+            min-width: 70px;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+
+        /* ── OBJECT DISPLAY ── */
+        .object-display {
+            background: #1a2332;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin: 8px 0 12px;
+            border: 1px solid #2e3b4f;
+            text-align: center;
+        }
+        .object-display .obj-label {
+            font-size: 13px;
+            color: #8a9bb5;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .object-display .obj-name {
+            font-size: 32px;
+            font-weight: 700;
+            color: #4cf0b0;
+            margin-top: 2px;
+            word-break: break-word;
+        }
+        .object-display .obj-name.random {
+            color: #f1c40f;
+        }
+
+        /* ── TIMER ── */
+        .timer-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 6px 0 10px;
+        }
+        .timer-row .timer-number {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            min-width: 56px;
+            color: #4cf0b0;
+        }
+        .timer-row .timer-number.warning {
+            color: #f1c40f;
+        }
+        .timer-row .timer-number.danger {
+            color: #e74c3c;
+            animation: pulse 0.6s infinite alternate;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.4;
+            }
+        }
+        .timer-row .timer-bar {
+            flex: 1;
+            height: 6px;
+            background: #1e2838;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .timer-row .timer-bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2d9cdb, #4cf0b0);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 100%;
+        }
+
+        /* ── PROGRESS BAR (scan) ── */
+        .scan-section {
+            margin: 12px 0 8px;
+        }
+        .scan-section .scan-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #8a9bb5;
+            margin-bottom: 4px;
+        }
+        .scan-section .scan-header .scan-label {
+            font-weight: 600;
+            color: #bcc9e0;
+        }
+        .scan-section .scan-header .scan-pct {
+            font-weight: 700;
+            color: #4cf0b0;
+        }
+        .scan-track {
+            position: relative;
+            height: 32px;
+            background: #1a2332;
+            border-radius: 20px;
+            border: 1px solid #2e3b4f;
+            cursor: pointer;
+            touch-action: none;
+            user-select: none;
+            overflow: hidden;
+        }
+        .scan-track .scan-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2d9cdb, #4cf0b0);
+            border-radius: 20px;
+            transition: width 0.05s linear;
+            width: 0%;
+            pointer-events: none;
+        }
+        .scan-track .scan-handle {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+            border: 2px solid #4cf0b0;
+            pointer-events: none;
+            left: 0%;
+            transition: left 0.05s linear;
+        }
+        .scan-track .scan-handle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #4cf0b0;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        /* ── HOST: object input ── */
+        .host-object-row {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0 8px;
+        }
+        .host-object-row input {
+            flex: 1;
+            padding: 12px 14px;
+            font-size: 15px;
+        }
+        .host-object-row .btn {
+            flex: 0 0 auto;
+            width: auto;
+            padding: 12px 22px;
+        }
+
+        /* ── HOST: refresh ── */
+        .refresh-row {
+            display: flex;
+            justify-content: flex-end;
+            margin: 2px 0 8px;
+        }
+        .refresh-row .btn {
+            width: auto;
+            padding: 8px 18px;
+            font-size: 13px;
+            background: #2a364b;
+        }
+        .refresh-row .btn:hover {
+            background: #36455e;
+        }
+
+        /* ── STATUS BADGE ── */
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .badge-host {
+            background: #2d9cdb;
+            color: #fff;
+        }
+        .badge-player {
+            background: #2ecc71;
+            color: #fff;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 480px) {
+            .app {
+                padding: 16px 14px 22px;
+                border-radius: 20px;
+            }
+            .title {
+                font-size: 22px;
+            }
+            .object-display .obj-name {
+                font-size: 26px;
+            }
+            .timer-row .timer-number {
+                font-size: 26px;
+                min-width: 44px;
+            }
+            .camera-wrap {
+                aspect-ratio: 4/3;
+            }
+            .btn {
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+            .host-object-row {
+                flex-direction: column;
+            }
+            .host-object-row .btn {
+                width: 100%;
+            }
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #131a26;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d9cdb;
+            border-radius: 10px;
+        }
+
+        /* ── MISC ── */
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .text-muted {
+            color: #5e718d;
+            font-size: 13px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app" id="app">
+
+        <!-- ─── MENU ─── -->
+        <div id="menuView">
+            <div class="menu-box">
+                <div class="title">
+                    <span>⟡ A.I Scanner</span>
+                </div>
+                <div class="sub">Scan objects with your camera · AI powered</div>
+
+                <div class="code-input">
+                    <label class="label" for="codeInput">Enter Session Code</label>
+                    <input type="text" id="codeInput" placeholder="e.g. K9V3Z" maxlength="12" autocomplete="off" spellcheck="false" />
+                </div>
+
+                <button class="btn" id="startBtn">▶ &nbsp;Start</button>
+
+                <div style="margin-top:18px; font-size:12px; color:#3e5068;">
+                    <span>🔒 private session · camera &amp; mic required</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── PLAYER VIEW ─── -->
+        <div id="playerView" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:20px;">🎥</span>
+                    <span style="font-weight:600; font-size:18px;">Player</span>
+                    <span class="badge badge-player">LIVE</span>
+                </div>
+                <span style="font-size:13px; color:#5e718d;" id="playerCodeDisplay">K9V3Z</span>
+            </div>
+
+            <!-- Camera -->
+            <div class="camera-wrap" id="playerCameraWrap">
+                <video id="playerVideo" autoplay playsinline muted></video>
+                <div class="cam-placeholder" id="playerCamPlaceholder">
+                    <span class="icon">📷</span>
+                    Camera starting…<br />
+                    <span style="font-size:12px; color:#4a5a74;">allow mic &amp; camera</span>
+                </div>
+            </div>
+
+            <div class="camera-controls">
+                <button class="btn btn-secondary btn-sm" id="playerFlipBtn">🔄 Flip</button>
+                <button class="btn btn-secondary btn-sm" id="playerBackCamBtn">📱 Back</button>
+                <button class="btn btn-secondary btn-sm" id="playerFrontCamBtn">📱 Front</button>
+            </div>
+
+            <!-- Object -->
+            <div class="object-display">
+                <div class="obj-label">📌 SHOW THIS OBJECT</div>
+                <div class="obj-name" id="playerObjectName">—</div>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-row">
+                <span class="timer-number" id="playerTimerDisplay">30</span>
+                <div class="timer-bar">
+                    <div class="fill" id="playerTimerFill" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <!-- Scan Progress -->
+            <div class="scan-section">
+                <div class="scan-header">
+                    <span class="scan-label">⟡ A.I Scanning</span>
+                    <span class="scan-pct" id="playerScanPct">0%</span>
+                </div>
+                <div class="scan-track" id="playerScanTrack">
+                    <div class="scan-fill" id="playerScanFill" style="width:0%;"></div>
+                    <div class="scan-handle" id="playerScanHandle" style="left:0%;"></div>
+                </div>
+            </div>
+
+            <div class="status-text" id="playerStatus">📡 Waiting for host…</div>
+
+            <button class="btn btn-secondary btn-sm" id="playerLeaveBtn" style="margin-top:12px; width:auto; padding:8px 18px;">
+                ⬅ Leave
+            </button>
+        </div>
+
+        <!-- ─── HOST VIEW ─── -->
+        <div id="hostView" class="hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:20px;">🤖</span>
+                    <span style="font-weight:600; font-size:18px;">A.I Host</span>
+                    <span class="badge badge-host">BOSS</span>
+                </div>
+                <span style="font-size:13px; color:#5e718d;" id="hostCodeDisplay">K9V3Z</span>
+            </div>
+
+            <!-- Player Camera -->
+            <div class="camera-wrap" id="hostCameraWrap">
+                <img id="hostCameraImg" src="" alt="Player camera" style="display:none; width:100%; height:100%; object-fit:cover;" />
+                <div class="cam-placeholder" id="hostCamPlaceholder">
+                    <span class="icon">📡</span>
+                    Waiting for player camera…<br />
+                    <span style="font-size:12px; color:#4a5a74;">player must allow camera</span>
+                </div>
+            </div>
+
+            <div class="refresh-row">
+                <button class="btn btn-sm" id="hostRefreshBtn">⟳ Refresh</button>
+            </div>
+
+            <!-- Host: object input -->
+            <div class="host-object-row">
+                <input type="text" id="hostObjectInput" placeholder='e.g. "water bottle" or "cat"' />
+                <button class="btn btn-success btn-sm" id="hostShowBtn">Show</button>
+            </div>
+            <div style="font-size:12px; color:#5e718d; margin:-4px 0 8px 4px;">
+                leave blank for random · press Enter to send
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-row">
+                <span class="timer-number" id="hostTimerDisplay">30</span>
+                <div class="timer-bar">
+                    <div class="fill" id="hostTimerFill" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <!-- Scan Progress (draggable) -->
+            <div class="scan-section">
+                <div class="scan-header">
+                    <span class="scan-label">⟡ A.I Scanning</span>
+                    <span class="scan-pct" id="hostScanPct">0%</span>
+                </div>
+                <div class="scan-track" id="hostScanTrack">
+                    <div class="scan-fill" id="hostScanFill" style="width:0%;"></div>
+                    <div class="scan-handle" id="hostScanHandle" style="left:0%;"></div>
+                </div>
+            </div>
+
+            <div class="status-text" id="hostStatus">🎯 Drag the scan bar to 100% to select next object</div>
+
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                <button class="btn btn-secondary btn-sm" id="hostNextBtn" style="flex:1;">⏭ Next Object</button>
+                <button class="btn btn-secondary btn-sm" id="hostLeaveBtn" style="flex:0 0 auto; padding:8px 18px;">⬅ Leave</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ──────────────────────────────────────────────────────────────
+        //  CONFIG
+        // ──────────────────────────────────────────────────────────────
+        const RANDOM_WORDS = ['cat', 'spoon', 'hand', 'fork', 'bed', 'belly button'];
+        const TIMER_SECONDS = 30;
+        const FRAME_INTERVAL_MS = 400; // 2.5 fps
+
+        // ──────────────────────────────────────────────────────────────
+        //  STATE
+        // ──────────────────────────────────────────────────────────────
+        let state = {
+            role: null, // 'player' | 'host'
+            channel: null, // BroadcastChannel
+            code: null,
+            // Player state
+            playerStream: null,
+            playerFlipped: false,
+            playerFacingMode: 'user',
+            playerTimer: TIMER_SECONDS,
+            playerTimerInterval: null,
+            playerObject: '—',
+            playerScanPct: 0,
+            playerIsScanning: false,
+            // Host state
+            hostCurrentObject: null,
+            hostTimer: TIMER_SECONDS,
+            hostTimerInterval: null,
+            hostScanPct: 0,
+            hostIsDragging: false,
+            // Shared
+            frameInterval: null,
+            lastFrame: null,
+        };
+
+        // DOM refs
+        const $ = id => document.getElementById(id);
+        const menuView = $('menuView');
+        const playerView = $('playerView');
+        const hostView = $('hostView');
+        const codeInput = $('codeInput');
+        const startBtn = $('startBtn');
+
+        // Player
+        const playerVideo = $('playerVideo');
+        const playerCamPlaceholder = $('playerCamPlaceholder');
+        const playerObjectName = $('playerObjectName');
+        const playerTimerDisplay = $('playerTimerDisplay');
+        const playerTimerFill = $('playerTimerFill');
+        const playerScanPct = $('playerScanPct');
+        const playerScanFill = $('playerScanFill');
+        const playerScanHandle = $('playerScanHandle');
+        const playerStatus = $('playerStatus');
+        const playerCodeDisplay = $('playerCodeDisplay');
+        const playerFlipBtn = $('playerFlipBtn');
+        const playerBackCamBtn = $('playerBackCamBtn');
+        const playerFrontCamBtn = $('playerFrontCamBtn');
+        const playerLeaveBtn = $('playerLeaveBtn');
+
+        // Host
+        const hostCameraImg = $('hostCameraImg');
+        const hostCamPlaceholder = $('hostCamPlaceholder');
+        const hostObjectInput = $('hostObjectInput');
+        const hostShowBtn = $('hostShowBtn');
+        const hostTimerDisplay = $('hostTimerDisplay');
+        const hostTimerFill = $('hostTimerFill');
+        const hostScanPct = $('hostScanPct');
+        const hostScanFill = $('hostScanFill');
+        const hostScanHandle = $('hostScanHandle');
+        const hostStatus = $('hostStatus');
+        const hostCodeDisplay = $('hostCodeDisplay');
+        const hostRefreshBtn = $('hostRefreshBtn');
+        const hostNextBtn = $('hostNextBtn');
+        const hostLeaveBtn = $('hostLeaveBtn');
+        const hostScanTrack = $('hostScanTrack');
+
+        // ──────────────────────────────────────────────────────────────
+        //  HELPERS
+        // ──────────────────────────────────────────────────────────────
+        function randomWord() {
+            return RANDOM_WORDS[Math.floor(Math.random() * RANDOM_WORDS.length)];
+        }
+
+        function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+        function formatPct(v) { return Math.round(v) + '%'; }
+
+        // ──────────────────────────────────────────────────────────────
+        //  COMMUNICATION
+        // ──────────────────────────────────────────────────────────────
+        function initChannel(code) {
+            if (state.channel) {
+                try { state.channel.close(); } catch (_) {}
+            }
+            state.channel = new BroadcastChannel('ai-scanner-' + code);
+            state.channel.onmessage = (e) => {
+                const data = e.data;
+                if (!data || !data.type) return;
+                handleMessage(data);
+            };
+        }
+
+        function sendMessage(type, payload) {
+            if (!state.channel) return;
+            try {
+                state.channel.postMessage({ type, ...payload });
+            } catch (_) { /* ignore */ }
+        }
+
+        function handleMessage(data) {
+            if (state.role === 'player') {
+                handlePlayerMessage(data);
+            } else if (state.role === 'host') {
+                handleHostMessage(data);
+            }
+        }
+
+        // ─── Player receives ─────────────────────────────────────────
+        function handlePlayerMessage(data) {
+            switch (data.type) {
+                case 'host_object':
+                    state.playerObject = data.object || '—';
+                    playerObjectName.textContent = state.playerObject;
+                    playerObjectName.className = 'obj-name' + (data.isRandom ? ' random' : '');
+                    // reset timer
+                    resetPlayerTimer();
+                    // reset scan
+                    setPlayerScan(0);
+                    playerStatus.textContent = '📌 Show: "' + state.playerObject + '"';
+                    break;
+
+                case 'host_timer':
+                    setPlayerTimer(data.seconds);
+                    break;
+
+                case 'host_scan':
+                    setPlayerScan(data.pct);
+                    break;
+
+                case 'host_status':
+                    playerStatus.textContent = data.msg || playerStatus.textContent;
+                    break;
+
+                case 'host_ping':
+                    // respond with frame if available
+                    if (state.lastFrame) {
+                        sendMessage('player_frame', { frame: state.lastFrame });
+                    }
+                    break;
+
+                case 'host_request_frame':
+                    if (state.lastFrame) {
+                        sendMessage('player_frame', { frame: state.lastFrame });
+                    }
+                    break;
+            }
+        }
+
+        // ─── Host receives ──────────────────────────────────────────
+        function handleHostMessage(data) {
+            switch (data.type) {
+                case 'player_frame':
+                    if (data.frame) {
+                        hostCameraImg.src = data.frame;
+                        hostCameraImg.style.display = 'block';
+                        hostCamPlaceholder.style.display = 'none';
+                    }
+                    break;
+
+                case 'player_status':
+                    // optional: show player status
+                    break;
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  PLAYER: CAMERA
+        // ──────────────────────────────────────────────────────────────
+        async function startPlayerCamera(facingMode = 'user') {
+            try {
+                if (state.playerStream) {
+                    state.playerStream.getTracks().forEach(t => t.stop());
+                    state.playerStream = null;
+                }
+                const constraints = {
+                    video: { facingMode: facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
+                    audio: true,
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                state.playerStream = stream;
+                playerVideo.srcObject = stream;
+                playerVideo.style.display = 'block';
+                playerCamPlaceholder.style.display = 'none';
+                state.playerFacingMode = facingMode;
+
+                // Start sending frames
+                startFrameSending();
+
+                return true;
+            } catch (err) {
+                console.warn('Camera error:', err);
+                playerCamPlaceholder.innerHTML = `
+                    <span class="icon">🚫</span>
+                    Camera access denied<br />
+                    <span style="font-size:12px; color:#e74c3c;">${err.message || 'please allow camera'}</span>
+                `;
+                playerCamPlaceholder.style.display = 'block';
+                playerVideo.style.display = 'none';
+                return false;
+            }
+        }
+
+        function startFrameSending() {
+            if (state.frameInterval) {
+                clearInterval(state.frameInterval);
+                state.frameInterval = null;
+            }
+            // Send a frame immediately
+            sendFrame();
+            state.frameInterval = setInterval(sendFrame, FRAME_INTERVAL_MS);
+        }
+
+        function sendFrame() {
+            if (state.role !== 'player') return;
+            if (!state.playerStream) return;
+            const video = playerVideo;
+            if (!video.videoWidth || !video.videoHeight) return;
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 320;
+                canvas.height = 240;
+                const ctx = canvas.getContext('2d');
+                if (state.playerFlipped) {
+                    ctx.translate(canvas.width, 0);
+                    ctx.scale(-1, 1);
+                }
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                state.lastFrame = dataUrl;
+                sendMessage('player_frame', { frame: dataUrl });
+            } catch (_) { /* ignore */ }
+        }
+
+        function flipPlayerCamera() {
+            state.playerFlipped = !state.playerFlipped;
+            playerVideo.style.transform = state.playerFlipped ? 'scaleX(-1)' : 'scaleX(1)';
+        }
+
+        async function switchPlayerCamera(facingMode) {
+            if (facingMode === state.playerFacingMode) return;
+            const ok = await startPlayerCamera(facingMode);
+            if (ok) {
+                // re-apply flip
+                playerVideo.style.transform = state.playerFlipped ? 'scaleX(-1)' : 'scaleX(1)';
+            }
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  PLAYER: TIMER & SCAN
+        // ──────────────────────────────────────────────────────────────
+        function setPlayerTimer(seconds) {
+            state.playerTimer = clamp(seconds, 0, TIMER_SECONDS);
+            playerTimerDisplay.textContent = Math.ceil(state.playerTimer);
+            const pct = (state.playerTimer / TIMER_SECONDS) * 100;
+            playerTimerFill.style.width = pct + '%';
+            // color
+            playerTimerDisplay.className = 'timer-number';
+            if (state.playerTimer <= 5) playerTimerDisplay.classList.add('danger');
+            else if (state.playerTimer <= 10) playerTimerDisplay.classList.add('warning');
+        }
+
+        function resetPlayerTimer() {
+            if (state.playerTimerInterval) {
+                clearInterval(state.playerTimerInterval);
+                state.playerTimerInterval = null;
+            }
+            setPlayerTimer(TIMER_SECONDS);
+            state.playerTimerInterval = setInterval(() => {
+                const newVal = state.playerTimer - 0.1;
+                if (newVal <= 0) {
+                    setPlayerTimer(0);
+                    // timer ran out → next object
+                    playerStatus.textContent = '⏰ Time out! New object coming…';
+                    sendMessage('player_timer_done', {});
+                    // host will handle next object
+                } else {
+                    setPlayerTimer(newVal);
+                }
+            }, 100);
+        }
+
+        function setPlayerScan(pct) {
+            state.playerScanPct = clamp(pct, 0, 100);
+            playerScanPct.textContent = formatPct(state.playerScanPct);
+            playerScanFill.style.width = state.playerScanPct + '%';
+            playerScanHandle.style.left = state.playerScanPct + '%';
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  HOST: TIMER & SCAN (draggable)
+        // ──────────────────────────────────────────────────────────────
+        function setHostTimer(seconds) {
+            state.hostTimer = clamp(seconds, 0, TIMER_SECONDS);
+            hostTimerDisplay.textContent = Math.ceil(state.hostTimer);
+            const pct = (state.hostTimer / TIMER_SECONDS) * 100;
+            hostTimerFill.style.width = pct + '%';
+            hostTimerDisplay.className = 'timer-number';
+            if (state.hostTimer <= 5) hostTimerDisplay.classList.add('danger');
+            else if (state.hostTimer <= 10) hostTimerDisplay.classList.add('warning');
+        }
+
+        function resetHostTimer() {
+            if (state.hostTimerInterval) {
+                clearInterval(state.hostTimerInterval);
+                state.hostTimerInterval = null;
+            }
+            setHostTimer(TIMER_SECONDS);
+            state.hostTimerInterval = setInterval(() => {
+                const newVal = state.hostTimer - 0.1;
+                if (newVal <= 0) {
+                    setHostTimer(0);
+                    hostStatus.textContent = '⏰ Time out! Selecting next object…';
+                    // trigger next object
+                    pickNextObject();
+                } else {
+                    setHostTimer(newVal);
+                    // broadcast timer to player
+                    sendMessage('host_timer', { seconds: newVal });
+                }
+            }, 100);
+        }
+
+        function setHostScan(pct, broadcast = true) {
+            state.hostScanPct = clamp(pct, 0, 100);
+            hostScanPct.textContent = formatPct(state.hostScanPct);
+            hostScanFill.style.width = state.hostScanPct + '%';
+            hostScanHandle.style.left = state.hostScanPct + '%';
+            if (broadcast) {
+                sendMessage('host_scan', { pct: state.hostScanPct });
+                // if 100%, pick next object
+                if (state.hostScanPct >= 100) {
+                    hostStatus.textContent = '✅ Scan complete! Selecting next object…';
+                    pickNextObject();
+                }
+            }
+        }
+
+        // ─── Host drag handling ──────────────────────────────────────
+        function setupHostDrag() {
+            const track = hostScanTrack;
+            let isDragging = false;
+
+            function getPctFromEvent(e) {
+                const rect = track.getBoundingClientRect();
+                const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+                return clamp((x / rect.width) * 100, 0, 100);
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                isDragging = true;
+                state.hostIsDragging = true;
+                const pct = getPctFromEvent(e);
+                setHostScan(pct, true);
+                // also broadcast status
+                sendMessage('host_status', { msg: '⟡ A.I scanning: ' + formatPct(pct) });
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const pct = getPctFromEvent(e);
+                setHostScan(pct, true);
+                sendMessage('host_status', { msg: '⟡ A.I scanning: ' + formatPct(pct) });
+            }
+
+            function onEnd(e) {
+                if (isDragging) {
+                    isDragging = false;
+                    state.hostIsDragging = false;
+                    // if we reached 100%, already handled in setHostScan
+                }
+            }
+
+            track.addEventListener('mousedown', onStart);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+            track.addEventListener('touchstart', onStart, { passive: false });
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('touchend', onEnd);
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  HOST: OBJECT SELECTION
+        // ──────────────────────────────────────────────────────────────
+        function pickNextObject() {
+            let word = state.hostCurrentObject;
+            let isRandom = false;
+            if (!word || word.trim() === '') {
+                word = randomWord();
+                isRandom = true;
+            }
+            // if it's a custom word, keep it for next time unless cleared
+            // but we always use the current value from input or stored
+            const inputVal = hostObjectInput.value.trim();
+            if (inputVal) {
+                word = inputVal;
+                isRandom = false;
+                state.hostCurrentObject = word;
+            } else if (!state.hostCurrentObject) {
+                word = randomWord();
+                isRandom = true;
+                state.hostCurrentObject = word;
+            } else {
+                word = state.hostCurrentObject;
+                isRandom = false;
+            }
+
+            // If still empty, fallback
+            if (!word || word.trim() === '') {
+                word = randomWord();
+                isRandom = true;
+                state.hostCurrentObject = word;
+            }
+
+            // Show to player
+            sendMessage('host_object', { object: word, isRandom });
+            hostStatus.textContent = '📤 Sent: "' + word + '" to player';
+
+            // Reset timer on host
+            resetHostTimer();
+            // Reset scan to 0
+            setHostScan(0, true);
+
+            // Also update the input field to show current
+            hostObjectInput.value = word;
+
+            // Update status
+            sendMessage('host_status', { msg: '📌 Show: "' + word + '"' });
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  INIT: MENU
+        // ──────────────────────────────────────────────────────────────
+        startBtn.addEventListener('click', () => {
+            const code = codeInput.value.trim().toUpperCase();
+            if (!code) {
+                codeInput.style.borderColor = '#e74c3c';
+                codeInput.placeholder = 'Please enter a code';
+                setTimeout(() => {
+                    codeInput.style.borderColor = '';
+                    codeInput.placeholder = 'e.g. K9V3Z';
+                }, 1500);
+                return;
+            }
+
+            // Secret: "boss" → host
+            const isHost = code.toLowerCase() === 'boss';
+
+            state.code = isHost ? 'BOSS' : code;
+            initChannel(state.code);
+
+            if (isHost) {
+                startHost();
+            } else {
+                startPlayer();
+            }
+        });
+
+        // Enter key on code input
+        codeInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') startBtn.click();
+        });
+
+        // ──────────────────────────────────────────────────────────────
+        //  START: PLAYER
+        // ──────────────────────────────────────────────────────────────
+        async function startPlayer() {
+            state.role = 'player';
+            menuView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerCodeDisplay.textContent = state.code;
+
+            // Start camera
+            const ok = await startPlayerCamera('user');
+            if (!ok) {
+                playerStatus.textContent = '⚠️ Camera required. Please allow access.';
+            } else {
+                playerStatus.textContent = '📡 Connected. Waiting for host…';
+            }
+
+            // Set initial UI
+            playerObjectName.textContent = '—';
+            setPlayerTimer(TIMER_SECONDS);
+            setPlayerScan(0);
+
+            // Start timer (will be reset by host)
+            resetPlayerTimer();
+            // Pause timer until host sends object
+            if (state.playerTimerInterval) {
+                clearInterval(state.playerTimerInterval);
+                state.playerTimerInterval = null;
+            }
+
+            // Listen for host messages already via channel
+
+            // Button: flip
+            playerFlipBtn.addEventListener('click', flipPlayerCamera);
+
+            // Button: back cam
+            playerBackCamBtn.addEventListener('click', () => {
+                switchPlayerCamera('environment');
+            });
+
+            // Button: front cam
+            playerFrontCamBtn.addEventListener('click', () => {
+                switchPlayerCamera('user');
+            });
+
+            // Leave
+            playerLeaveBtn.addEventListener('click', () => {
+                leaveGame();
+            });
+
+            // Send a ping to host to request frame
+            sendMessage('player_status', { status: 'ready' });
+            // Also send an initial frame
+            setTimeout(() => sendFrame(), 300);
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  START: HOST
+        // ──────────────────────────────────────────────────────────────
+        function startHost() {
+            state.role = 'host';
+            menuView.classList.add('hidden');
+            hostView.classList.remove('hidden');
+            hostCodeDisplay.textContent = 'BOSS';
+
+            // Init UI
+            setHostTimer(TIMER_SECONDS);
+            setHostScan(0, false);
+            hostStatus.textContent = '🎯 Drag the scan bar to 100% to select next object';
+            hostObjectInput.placeholder = 'e.g. "water bottle" or leave blank';
+
+            // Setup drag
+            setupHostDrag();
+
+            // Show button
+            hostShowBtn.addEventListener('click', () => {
+                const val = hostObjectInput.value.trim();
+                if (val) {
+                    state.hostCurrentObject = val;
+                    pickNextObject();
+                } else {
+                    // random
+                    state.hostCurrentObject = null;
+                    pickNextObject();
+                }
+            });
+
+            // Enter key on input
+            hostObjectInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') hostShowBtn.click();
+            });
+
+            // Refresh camera
+            hostRefreshBtn.addEventListener('click', () => {
+                hostCameraImg.style.display = 'none';
+                hostCamPlaceholder.style.display = 'block';
+                hostCamPlaceholder.innerHTML = `
+                    <span class="icon">⟳</span>
+                    Refreshing…<br />
+                    <span style="font-size:12px; color:#4a5a74;">requesting new frame</span>
+                `;
+                sendMessage('host_request_frame', {});
+                setTimeout(() => {
+                    if (!hostCameraImg.src || hostCameraImg.style.display === 'none') {
+                        hostCamPlaceholder.innerHTML = `
+                            <span class="icon">📡</span>
+                            No frame yet<br />
+                            <span style="font-size:12px; color:#4a5a74;">waiting for player</span>
+                        `;
+                        hostCamPlaceholder.style.display = 'block';
+                    }
+                }, 1000);
+            });
+
+            // Next button
+            hostNextBtn.addEventListener('click', () => {
+                pickNextObject();
+            });
+
+            // Leave
+            hostLeaveBtn.addEventListener('click', () => {
+                leaveGame();
+            });
+
+            // Start with a random object
+            state.hostCurrentObject = randomWord();
+            pickNextObject();
+
+            // Request frame from player
+            setTimeout(() => {
+                sendMessage('host_request_frame', {});
+            }, 500);
+
+            // Ping player periodically for frames
+            setInterval(() => {
+                if (state.role === 'host') {
+                    sendMessage('host_ping', {});
+                }
+            }, 2000);
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  LEAVE
+        // ──────────────────────────────────────────────────────────────
+        function leaveGame() {
+            // Stop all timers
+            if (state.playerTimerInterval) {
+                clearInterval(state.playerTimerInterval);
+                state.playerTimerInterval = null;
+            }
+            if (state.hostTimerInterval) {
+                clearInterval(state.hostTimerInterval);
+                state.hostTimerInterval = null;
+            }
+            if (state.frameInterval) {
+                clearInterval(state.frameInterval);
+                state.frameInterval = null;
+            }
+
+            // Stop camera
+            if (state.playerStream) {
+                state.playerStream.getTracks().forEach(t => t.stop());
+                state.playerStream = null;
+            }
+
+            // Close channel
+            if (state.channel) {
+                try { state.channel.close(); } catch (_) {}
+                state.channel = null;
+            }
+
+            // Reset UI
+            state.role = null;
+            menuView.classList.remove('hidden');
+            playerView.classList.add('hidden');
+            hostView.classList.add('hidden');
+            codeInput.value = '';
+            codeInput.focus();
+
+            // Reset player video
+            playerVideo.style.display = 'none';
+            playerCamPlaceholder.style.display = 'block';
+            playerCamPlaceholder.innerHTML = `
+                <span class="icon">📷</span>
+                Camera starting…<br />
+                <span style="font-size:12px; color:#4a5a74;">allow mic &amp; camera</span>
+            `;
+            playerVideo.srcObject = null;
+            playerVideo.style.transform = '';
+
+            // Reset host camera
+            hostCameraImg.style.display = 'none';
+            hostCameraImg.src = '';
+            hostCamPlaceholder.style.display = 'block';
+            hostCamPlaceholder.innerHTML = `
+                <span class="icon">📡</span>
+                Waiting for player camera…<br />
+                <span style="font-size:12px; color:#4a5a74;">player must allow camera</span>
+            `;
+
+            state.lastFrame = null;
+            state.playerFlipped = false;
+            state.playerFacingMode = 'user';
+            state.hostCurrentObject = null;
+            state.hostIsDragging = false;
+            state.playerScanPct = 0;
+            state.hostScanPct = 0;
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        //  HANDLE PLAYER TIMER DONE (sent from player to host)
+        // ──────────────────────────────────────────────────────────────
+        // We override the handleMessage for player to also handle timer done
+        const origHandleMessage = handleMessage;
+        handleMessage = function(data) {
+            if (data.type === 'player_timer_done' && state.role === 'host') {
+                // Player's timer ran out
+                hostStatus.textContent = '⏰ Player ran out of time! Next object…';
+                pickNextObject();
+                return;
+            }
+            origHandleMessage(data);
+        };
+
+        // ──────────────────────────────────────────────────────────────
+        //  PLAYER: handle timer done (send to host)
+        // ──────────────────────────────────────────────────────────────
+        // Override player timer interval to send done event
+        const origResetPlayerTimer = resetPlayerTimer;
+        resetPlayerTimer = function() {
+            if (state.playerTimerInterval) {
+                clearInterval(state.playerTimerInterval);
+                state.playerTimerInterval = null;
+            }
+            setPlayerTimer(TIMER_SECONDS);
+            state.playerTimerInterval = setInterval(() => {
+                const newVal = state.playerTimer - 0.1;
+                if (newVal <= 0) {
+                    setPlayerTimer(0);
+                    playerStatus.textContent = '⏰ Time out! New object coming…';
+                    sendMessage('player_timer_done', {});
+                    // reset timer but pause
+                    if (state.playerTimerInterval) {
+                        clearInterval(state.playerTimerInterval);
+                        state.playerTimerInterval = null;
+                    }
+                } else {
+                    setPlayerTimer(newVal);
+                }
+            }, 100);
+        };
+
+        // ──────────────────────────────────────────────────────────────
+        //  BOOT
+        // ──────────────────────────────────────────────────────────────
+        console.log('⟡ A.I Scanner loaded');
+        console.log('🔑 Type "boss" in the code field to become the A.I Host');
+
+        // Focus code input
+        codeInput.focus();
+
+        // ─── Handle page unload ──────────────────────────────────────
+        window.addEventListener('beforeunload', () => {
+            if (state.playerStream) {
+                state.playerStream.getTracks().forEach(t => t.stop());
+            }
+            if (state.channel) {
+                try { state.channel.close(); } catch (_) {}
+            }
+            if (state.playerTimerInterval) clearInterval(state.playerTimerInterval);
+            if (state.hostTimerInterval) clearInterval(state.hostTimerInterval);
+            if (state.frameInterval) clearInterval(state.frameInterval);
+        });
+
+        // ──────────────────────────────────────────────────────────────
+        //  FIX: player timer reset when host sends new object
+        // ──────────────────────────────────────────────────────────────
+        // Patch: when player receives host_object, reset timer
+        const origHandlePlayerMessage = handlePlayerMessage;
+        handlePlayerMessage = function(data) {
+            if (data.type === 'host_object') {
+                // reset timer
+                resetPlayerTimer();
+                // set scan to 0
+                setPlayerScan(0);
+            }
+            origHandlePlayerMessage(data);
+        };
+
+        // Also handle host_timer from host
+        // Already handled in handlePlayerMessage
+
+        console.log('✅ Ready!');
+    </script>
+
+</body>
+</html>
